@@ -153,6 +153,7 @@ class MinimaxPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
+        print("time left: " + str(time_left))
         self.time_left = time_left
 
         # Initialize the best move so that this function returns something
@@ -212,8 +213,63 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        maxv,maxm = self.max_value(game)
+
+        return maxm
+
+    def min_value(self,game,depth=1):
+        """ Return the utility value if the game is over,
+        otherwise return the minimum value over all legal child
+        nodes.
+        """
+
+        legal_moves = game.get_legal_moves()
+
+        # terminal test
+        if not bool(legal_moves):
+            return game.utility(self),None
+
+        # min value
+        minv = float("inf")
+        # min value move
+        minm = legal_moves[0]
+
+        print(depth * ">" + " MIN")
+        for m in legal_moves:
+            move_value,move_coord = self.max_value(game.forecast_move(m),depth+1)
+            if move_value < minv:
+                minv = move_value
+                minm = m
+        print(depth * "<" + " MIN: " + str(minv))
+        return minv,minm
+
+
+    def max_value(self,game,depth=1):
+        """ Return the utility value if the game is over,
+        otherwise return the maximum value over all legal child
+        nodes.
+        """
+
+        # terminal test
+        legal_moves = game.get_legal_moves()
+
+        if not bool(legal_moves):
+            return game.utility(self),None
+
+        # max value
+        maxv = float("-inf")
+        # max value move
+        maxm = legal_moves[0]
+
+        print(depth * ">" + " MAX")
+        for m in legal_moves:
+            move_value,move_coord = self.min_value(game.forecast_move(m),depth+1)
+            if move_value > maxv:
+                maxv = move_value
+                maxm = m
+
+        print(depth * "<" + " MAX: " + str(maxv))
+        return maxv,maxm
 
 
 class AlphaBetaPlayer(IsolationPlayer):
