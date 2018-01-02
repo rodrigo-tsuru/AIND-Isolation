@@ -3,6 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
+import logging
 
 
 class SearchTimeout(Exception):
@@ -117,7 +118,7 @@ class IsolationPlayer:
         self.score = score_fn
         self.time_left = None
         self.TIMER_THRESHOLD = timeout
-
+        self.logger = logging.getLogger(self.__class__.__name__)
 
 class MinimaxPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using depth-limited minimax
@@ -153,7 +154,7 @@ class MinimaxPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
-        print("time left: " + str(time_left))
+        self.logger.debug("time left: " + str(time_left))
         self.time_left = time_left
 
         # Initialize the best move so that this function returns something
@@ -213,11 +214,11 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        maxv,maxm = self.max_value(game)
+        maxv,maxm = self.max_value(game,depth)
 
         return maxm
 
-    def min_value(self,game,depth=1):
+    def min_value(self,game,depth):
         """ Return the utility value if the game is over,
         otherwise return the minimum value over all legal child
         nodes.
@@ -225,7 +226,10 @@ class MinimaxPlayer(IsolationPlayer):
 
         legal_moves = game.get_legal_moves()
 
-        # terminal test
+        # terminal tests
+        if depth == 1:
+            return len(legal_moves),None
+
         if not bool(legal_moves):
             return game.utility(self),None
 
@@ -234,17 +238,17 @@ class MinimaxPlayer(IsolationPlayer):
         # min value move
         minm = legal_moves[0]
 
-        print(depth * ">" + " MIN")
+        self.logger.debug(depth * ">" + " MIN")
         for m in legal_moves:
-            move_value,move_coord = self.max_value(game.forecast_move(m),depth+1)
+            move_value,move_coord = self.max_value(game.forecast_move(m),depth-1)
             if move_value < minv:
                 minv = move_value
                 minm = m
-        print(depth * "<" + " MIN: " + str(minv))
+        self.logger.debug(depth * "<" + " MIN: " + str(minv))
         return minv,minm
 
 
-    def max_value(self,game,depth=1):
+    def max_value(self,game,depth):
         """ Return the utility value if the game is over,
         otherwise return the maximum value over all legal child
         nodes.
@@ -252,6 +256,10 @@ class MinimaxPlayer(IsolationPlayer):
 
         # terminal test
         legal_moves = game.get_legal_moves()
+
+        # terminal tests
+        if depth == 1:
+            return len(legal_moves),None
 
         if not bool(legal_moves):
             return game.utility(self),None
@@ -261,14 +269,14 @@ class MinimaxPlayer(IsolationPlayer):
         # max value move
         maxm = legal_moves[0]
 
-        print(depth * ">" + " MAX")
+        self.logger.debug(depth * ">" + " MAX")
         for m in legal_moves:
-            move_value,move_coord = self.min_value(game.forecast_move(m),depth+1)
+            move_value,move_coord = self.min_value(game.forecast_move(m),depth-1)
             if move_value > maxv:
                 maxv = move_value
                 maxm = m
 
-        print(depth * "<" + " MAX: " + str(maxv))
+        self.logger.debug(depth * "<" + " MAX: " + str(maxv))
         return maxv,maxm
 
 
