@@ -230,7 +230,7 @@ class MinimaxPlayer(IsolationPlayer):
         legal_moves = game.get_legal_moves()
 
         # terminal tests
-        if depth == 1:
+        if depth == 0:
             return len(legal_moves),None
 
         if not bool(legal_moves):
@@ -263,7 +263,7 @@ class MinimaxPlayer(IsolationPlayer):
         legal_moves = game.get_legal_moves()
 
         # terminal tests
-        if depth == 1:
+        if depth == 0:
             return len(legal_moves),None
 
         if not bool(legal_moves):
