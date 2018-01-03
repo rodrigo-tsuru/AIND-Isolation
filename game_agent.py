@@ -35,8 +35,9 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    opponent = game.get_opponent(player)
+
+    return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
 
 
 def custom_score_2(game, player):
@@ -231,7 +232,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # terminal tests
         if depth == 0:
-            return len(legal_moves),None
+            return self.score(game,game.active_player),None
 
         if not bool(legal_moves):
             return game.utility(self),None
@@ -264,7 +265,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # terminal tests
         if depth == 0:
-            return len(legal_moves),None
+            return self.score(game,game.active_player),None
 
         if not bool(legal_moves):
             return game.utility(self),None
