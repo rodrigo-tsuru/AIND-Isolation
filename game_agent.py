@@ -211,8 +211,8 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
+#        if self.time_left() < self.TIMER_THRESHOLD:
+#            raise SearchTimeout()
 
         maxv,maxm = self.max_value(game,depth)
 
@@ -223,6 +223,9 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the minimum value over all legal child
         nodes.
         """
+
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
 
         legal_moves = game.get_legal_moves()
 
@@ -253,6 +256,8 @@ class MinimaxPlayer(IsolationPlayer):
         otherwise return the maximum value over all legal child
         nodes.
         """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
 
         # terminal test
         legal_moves = game.get_legal_moves()
