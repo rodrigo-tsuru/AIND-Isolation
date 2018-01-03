@@ -37,6 +37,9 @@ def custom_score(game, player):
     """
     opponent = game.get_opponent(player)
 
+    #return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
+
+    #improved_score?
     return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
 
 
@@ -165,7 +168,7 @@ class MinimaxPlayer(IsolationPlayer):
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.minimax(game, self.search_depth)
+            best_move = self.minimax(game, self.search_depth)
 
         except SearchTimeout:
             pass  # Handle any actions required after timeout as needed
@@ -232,7 +235,9 @@ class MinimaxPlayer(IsolationPlayer):
 
         # terminal tests
         if depth == 0:
-            return self.score(game,game.active_player),None
+            score = self.score(game,game.inactive_player)
+            self.logger.debug(depth * ">" + " Score: " + str(score))
+            return score,None
 
         if not bool(legal_moves):
             return game.utility(self),None
@@ -265,7 +270,9 @@ class MinimaxPlayer(IsolationPlayer):
 
         # terminal tests
         if depth == 0:
-            return self.score(game,game.active_player),None
+            score = self.score(game,game.active_player)
+            self.logger.debug(depth * ">" + " Score: " + str(score))
+            return score,None
 
         if not bool(legal_moves):
             return game.utility(self),None

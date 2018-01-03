@@ -95,3 +95,7 @@ ENV/
 .ropeproject
 
 # End of https://www.gitignore.io/api/python
+
+# ignore udacity generated files
+isolation*.zip
+isolation*.json
