@@ -40,7 +40,7 @@ def custom_score(game, player):
     #return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
 
     #improved_score?
-    return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
+    return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent)))
 
 
 def custom_score_2(game, player):
@@ -158,7 +158,7 @@ class MinimaxPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
-        self.logger.debug("time left: " + str(time_left))
+        #self.logger.debug("time left: " + str(time_left))
         self.time_left = time_left
 
         # Initialize the best move so that this function returns something
@@ -249,6 +249,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         self.logger.debug(depth * ">" + " MIN")
         for m in legal_moves:
+            self.logger.debug("evaluating move: {0}".format(m))
             move_value,move_coord = self.max_value(game.forecast_move(m),depth-1)
             if move_value < minv:
                 minv = move_value
@@ -284,6 +285,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         self.logger.debug(depth * ">" + " MAX")
         for m in legal_moves:
+            self.logger.debug("evaluating move: {0}".format(m))
             move_value,move_coord = self.min_value(game.forecast_move(m),depth-1)
             if move_value > maxv:
                 maxv = move_value
@@ -331,8 +333,18 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        best_move = (-1, -1)
+
+        try:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            best_move = self.alphabeta(game, self.search_depth)
+
+        except SearchTimeout:
+            pass  # Handle any actions required after timeout as needed
+
+        # Return the best move from the last completed search iteration
+        return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -379,8 +391,99 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
+
+
+        maxv,maxm = self.max_value(game,depth)
+
+        return maxm
+
+    def min_value(self,game,depth,alpha=float("-inf"), beta=float("inf")):
+        """ Return the utility value if the game is over,
+        otherwise return the minimum value over all legal child
+        nodes.
+        """
+
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        self.logger.debug(" alpha: {0}. beta: {1}".format(alpha,beta))
+
+        legal_moves = game.get_legal_moves()
+
+        # terminal tests
+        if depth == 0:
+            score = self.score(game,game.inactive_player)
+            self.logger.debug(" Score: " + str(score))
+            return score,None
+
+        if not bool(legal_moves):
+            return game.utility(self),None
+
+        # min value
+        minv = float("inf")
+        # min value move
+        minm = legal_moves[0]
+
+        self.logger.debug(depth * ">" + " MIN")
+        for m in legal_moves:
+            self.logger.debug(depth * ">" +" evaluating move: {0}".format(m))
+            move_value,move_coord = self.max_value(game.forecast_move(m),depth-1,alpha,beta)
+            if move_value < minv:
+                minv = move_value
+                minm = m
+
+            if minv <= alpha:
+                self.logger.debug(depth * ">" +" Pruning")
+                return minv,minm
+            
+            beta = min(beta,minv)
+
+        self.logger.debug(depth * "<" + " MIN: " + str(minv))
+        return minv,minm
+
+
+    def max_value(self,game,depth,alpha=float("-inf"), beta=float("inf")):
+        """ Return the utility value if the game is over,
+        otherwise return the maximum value over all legal child
+        nodes.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+
+        self.logger.debug(" alpha: {0}. beta: {1}".format(alpha,beta))
+
+        # terminal test
+        legal_moves = game.get_legal_moves()
+
+        # terminal tests
+        if depth == 0:
+            score = self.score(game,game.active_player)
+            self.logger.debug(" Score: " + str(score))
+            return score,None
+
+        if not bool(legal_moves):
+            return game.utility(self),None
+
+        # max value
+        maxv = float("-inf")
+        # max value move
+        maxm = legal_moves[0]
+
+        self.logger.debug(depth * ">" + " MAX")
+        for m in legal_moves:
+            self.logger.debug(depth * ">" +" evaluating move: {0}".format(m))
+            move_value,move_coord = self.min_value(game.forecast_move(m),depth-1,alpha,beta)
+            if move_value > maxv:
+                maxv = move_value
+                maxm = m
+
+            if maxv >= beta:
+                self.logger.debug(depth * ">" +" Pruning")
+                return maxv,maxm
+
+            alpha = max(alpha,maxv)
+
+        self.logger.debug(depth * "<" + " MAX: " + str(maxv))
+        return maxv,maxm
+
