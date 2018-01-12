@@ -4,7 +4,7 @@ and include the results in your report.
 """
 import random
 import logging
-
+import math
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -65,8 +65,11 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    opponent = game.get_opponent(player)
+
+    #return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
+
+    return float(len(game.get_legal_moves(player)) - 2*len(game.get_legal_moves(opponent)))
 
 
 def custom_score_3(game, player):
@@ -91,8 +94,18 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+
+    opponent = game.get_opponent(player)
+
+    # put more weight on middle board moves
+    center = (game.width/2,game.height/2)
+    location = game.get_player_location(player)
+    distance_from_center = math.hypot(center[0] - location[0],center[1] - location[1])
+    weight = 1/math.exp(distance_from_center)
+
+
+    #return len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))
+    return float(len(game.get_legal_moves(player)) - len(game.get_legal_moves(opponent))) * weight
 
 
 class IsolationPlayer:
